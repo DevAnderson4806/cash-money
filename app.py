@@ -333,4 +333,10 @@ def excluir_planejamento(id):
 
 # Executar o servidor
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+
+    # Obtém a porta a partir da variável de ambiente PORT, padrão 5000
+    PORT = int(os.getenv("PORT", 5000))
+
+    # Executa o app na interface 0.0.0.0 para ser acessível publicamente
+    app.run(host="0.0.0.0", port=PORT, debug=True)
