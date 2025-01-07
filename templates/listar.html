@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/novo.css">
+    <title>Planejamentos</title>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Seus Planejamentos</h1>
+        <a href="/planejamento/novo" class="btn">+ Novo Planejamento</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Meta (R$)</th>
+                    <th>Atual (R$)</th>
+                    <th>Prazo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for planejamento in planejamentos %}
+                <tr>
+                    <td>{{ planejamento[2] }}</td>
+                    <td>{{ planejamento[3] }}</td>
+                    <td>{{ planejamento[4] }}</td>
+                    <td>{{ planejamento[5] }}</td>
+                    <td>
+                        <a href="/planejamento/editar/{{ planejamento[0] }}" class="btn">Editar</a>
+                        <form action="/planejamento/excluir/{{ planejamento[0] }}" method="POST" style="display:inline;">
+                            <button type="submit" class="excluir">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/" class="btn">Voltar</a>
+    </div>
+</body>
+</html>

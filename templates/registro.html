@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Registrar</title>
+    <link rel="stylesheet" href="../static/cadastro.css" />
+    <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+  </head>
+  <body>
+    <h1 class="texto">Registrar Usuário</h1>
+    <form action="/registro" method="post">
+      <label for="username">nome de usuário:</label>
+      <input
+        type="text"
+        name="username"
+        placeholder="Nome de usuário"
+        required
+      />
+      <label for="password">senha:</label>
+      <input
+        type="password"
+        name="password"
+        placeholder="Senha"
+        required
+        id="password"
+      />
+      <button type="submit">Registrar</button>
+    </form>
+    <a href="/login">Já tem uma conta? Faça login</a>
+  </body>
+</html>

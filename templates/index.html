@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Finanças</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="manifest" href="../static/manifest.json">
+    <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+</head>
+
+<body>
+    {% if username %}
+    <h2 class="id">Bem-vindo, {{ username }}!</h2>
+    {% endif %}
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li style="color: #03fc0b;">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <h1>Movimentações</h1>
+    <div class="navigation">
+        <a href="/saldo">Ver Saldo</a> | 
+        <a href="/resumo">Resumo Mensal</a> | 
+        <a href="/planejamento">Planejamento Financeiro</a> <!-- Link para planejamento -->
+    </div>
+
+    <form action="/registrar" method="post" class="transaction-form">
+        <input type="text" name="descricao" placeholder="Descrição" required>
+        <input type="number" step="0.01" name="valor" placeholder="Valor" required>
+        <select name="tipo">
+            <option value="entrada">Entrada</option>
+            <option value="saida">Saída</option>
+        </select>
+        <input type="text" name="categoria" placeholder="Categoria" required>
+        <button type="submit">Registrar</button>
+    </form>
+
+    <div class="filters">
+        <h1>Filtrar Movimentações</h1>
+        <form method="GET" action="/">
+            <select name="tipo">
+                <option value="">Tipo</option>
+                <option value="entrada" {% if tipo_filtro == 'entrada' %}selected{% endif %}>Entrada</option>
+                <option value="saida" {% if tipo_filtro == 'saida' %}selected{% endif %}>Saída</option>
+            </select>
+            <input type="text" name="categoria" placeholder="Categoria" value="{{ categoria_filtro }}">
+            <button type="submit">Filtrar</button>
+        </form>
+    </div>
+
+    <ul class="transaction-list">
+        {% for t in transacoes %}
+        <li>
+            {{ t[4] }} - {{ t[1] }}: R$ {{ t[2] }} ({{ t[3] }})
+            <form action="/excluir/{{ t[0] }}" method="post" style="display:inline;" class="form-excluir">
+                <button type="submit" onclick="confirmarExclusao(event)" class="excluir">Excluir</button>
+            </form>
+            <a href="/editar/{{ t[0] }}">Editar</a> <!-- Link para editar a transação -->
+        </li>
+        {% endfor %}
+    </ul>
+
+    <nav>
+        <ul>
+            {% if 'user_id' in session %}
+                <li><a href="/logout" class="dinamico">Deslogar</a></li> <!-- A classe 'dinamico' aplica estilo verde -->
+            {% else %}
+                <li><a href="/login">Login</a></li>
+                <li><a href="/registro">Registrar</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <script src="/static/script.js"></script>
+    <script>    
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('C:/Users/user/OneDrive/Área de Trabalho/finanças/service-worker.js').then(function(registration) {
+                console.log('Service Worker registrado com sucesso:', registration);
+            }).catch(function(error) {
+                console.log('Erro ao registrar o Service Worker:', error);
+        });
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,153 @@
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    /* Gradiente vibrante */
+    display: block;
+    /* Disposição vertical */
+    height: 100vh;
+    /* Preenche toda a tela */
+    margin: 0;
+    padding: 0;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+}
+
+ul li {
+    list-style-type: none;
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.7);
+    /* Fundo escuro e transparente */
+    padding: 40px;
+    /* Mais padding para o conteúdo ficar mais espaçado */
+    border-radius: 10px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin: 100px auto;
+    /* Centraliza verticalmente */
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.container:hover {
+    transform: scale(1.05);
+    /* Efeito de zoom */
+}
+
+h1 {
+    margin-bottom: 30px;
+    /* Mais margem abaixo do título */
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #00e5ff;
+    text-shadow: 0 0 5px rgba(0, 229, 255, 0.8);
+}
+
+input {
+    width: 40%;
+    /* Definindo a largura dos inputs como 40% */
+    padding: 12px;
+    /* Mais padding para os inputs */
+    margin: 20px auto;
+    /* Aumentando a margem entre os inputs e centralizando */
+    border: 1px solid #00e5ff;
+    border-radius: 5px;
+    outline: none;
+    background-color: #222;
+    color: #fff;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    display: block;
+    /* Garantindo que os inputs fiquem um abaixo do outro */
+}
+
+input:focus {
+    border-color: #ff00f7;
+    /* Efeito de foco roxo */
+    box-shadow: 0 0 5px rgba(255, 0, 247, 0.5);
+}
+
+button {
+    width: 20%;
+    padding: 14px;
+    /* Mais padding no botão */
+    background-color: #2575fc;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 20px;
+    /* Aumentando o espaço acima do botão */
+}
+
+button:hover {
+    background-color: green;
+    transform: scale(1.05);
+}
+
+a {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    margin-top: 30px;
+    /* Aumentando o espaço abaixo do botão */
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: greenyellow;
+    /* Mudando a cor do hover para roxo neon */
+}
+
+.error-message {
+    color: #ff4c4c;
+    margin: 15px 0;
+    /* Aumentando a margem para mensagens de erro */
+    font-size: 14px;
+}
+
+.login {
+    font-size: 60px;
+    margin-bottom: 190px;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 600px) {
+    .container {
+        width: 80%;
+        padding: 30px;
+        /* Aumentando o padding em telas pequenas */
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 25px;
+        /* Ajustando margem do título */
+    }
+
+    input,
+    button {
+        font-size: 14px;
+    }
+
+    input {
+        margin: 18px auto;
+        /* Aumentando margem entre inputs */
+    }
+
+    button {
+        margin-top: 25px;
+        /* Mais espaço entre o botão e os campos */
+    }
+
+    a {
+        margin-top: 35px;
+        /* Aumentando espaço entre o botão e o link */
+    }
+}

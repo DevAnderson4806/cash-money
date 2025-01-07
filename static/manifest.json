@@ -1,0 +1,21 @@
+{
+  "name": "cash money",
+  "short_name": "Finanças",
+  "description": "Aplicativo de controle financeiro pessoal para gerenciar entradas e saídas de dinheiro.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2575fc",
+  "icons": [
+    {
+      "src":"../static/imagem_app-removebg-preview.ico",
+      "sizes": "192x192",
+      "type": "image/ico"
+    },
+    {
+      "src": "../static/imagem_app-removebg-preview.ico",
+      "sizes": "512x512",
+      "type": "image/ico"
+    }
+  ]
+}

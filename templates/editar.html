@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Transação</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+</head>
+<body>
+    <h1>Editar Transação</h1>
+    
+    <form action="/editar/{{ transacao[0] }}" method="post" class="transaction-form">
+        <input type="text" name="descricao" value="{{ transacao[1] }}" placeholder="Descrição" required>
+        <input type="number" step="0.01" name="valor" value="{{ transacao[2] }}" placeholder="Valor" required>
+        <select name="tipo" required>
+            <option value="entrada" {% if transacao[3] == 'entrada' %}selected{% endif %}>Entrada</option>
+            <option value="saida" {% if transacao[3] == 'saida' %}selected{% endif %}>Saída</option>
+        </select>
+        <input type="text" name="categoria" value="{{ transacao[4] }}" placeholder="Categoria" required>
+        <button type="submit">Atualizar</button>
+    </form>
+
+    <nav>
+        <ul>
+            <li><a href="/">Voltar para Transações</a></li>
+            {% if 'user_id' in session %}
+                <li><a href="/logout">Deslogar</a></li>
+            {% else %}
+                <li><a href="/login">Login</a></li>
+                <li><a href="/registro">Registrar</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
