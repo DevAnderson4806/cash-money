@@ -107,12 +107,20 @@ def saldo():
     return render_template("saldo.html", saldo=saldo_atual)
 
 # Exibir resumo mensal
+from datetime import datetime
+from flask import render_template
+
+from datetime import datetime
+from flask import render_template
+
 @app.route("/resumo")
 @login_required
 def resumo():
     mes_atual = datetime.now().strftime("%Y-%m")
     conn = conectar_financas_db()
     cursor = conn.cursor()
+    
+    # Obter resumo das transações
     cursor.execute(
         """SELECT tipo, SUM(valor) FROM transacoes WHERE data LIKE ? GROUP BY tipo""",
         (f"{mes_atual}%",),
@@ -131,9 +139,15 @@ def resumo():
     entradas = sum(r[1] for r in resumo if r[0] == "entrada")
     saidas = sum(r[1] for r in resumo if r[0] == "saida")
     total = entradas - saidas
+    saldo = entradas - saidas  # Saldo total para o gráfico de pizza
 
     return render_template(
-        "resumo.html", entradas=entradas, saidas=saidas, total=total, transacoes=transacoes
+        "resumo.html", 
+        entradas=entradas, 
+        saídas=saidas, 
+        saldo=saldo,  # Passando o saldo para o template
+        total=total, 
+        transacoes=transacoes
     )
 
 # Gerar PDF com o resumo e transações

@@ -6,34 +6,56 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../static/resumo.css">
     <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+    <style>
+        body {
+            text-align: center; /* Centraliza o texto */
+        }
+
+        /*canvas {
+            width: 100% !important;  /* Faz o canvas ocupar 100% da largura do contêiner */
+            height: auto !important;  /* Mantém a proporção */
+            max-width: 400px;         /* Define um tamanho máximo */
+            margin: 20px auto;       /* Centraliza os gráficos */
+        }*/
+    </style>
 </head>
 <body>
     <h1>Resumo Mensal</h1>
     <p>Entradas: R$ {{ entradas }}</p>
-    <p>Saídas: R$ {{ saidas }}</p>
-    <p>Saldo: R$ {{ saldo_atual }}</p>
+    <p>Saídas: R$ {{ saídas }}</p>
+    <p>Saldo: R$ {{ saldo }}</p>
+    
     <div>
         <a href="/exportar_csv" class="btn">Exportar para CSV</a>
         <a href="/exportar_pdf" class="btn">Exportar para PDF</a>
     </div>
     
     <h2>Gráfico Resumo Mensal</h2>
-    <canvas id="resumoChart" width="400" height="200"></canvas>
+    <button id="toggleButton">Mostrar em Porcentagem</button>
+    <canvas id="resumoChart"></canvas>
     <p>Total: R$ {{ total }}</p>
 
+    <h2>Distribuição de Entradas e Saídas</h2>
+    <canvas id="pieChart"></canvas>
+
     <script>
-        var ctx = document.getElementById('resumoChart').getContext('2d');
-        var resumoChart = new Chart(ctx, {
+        const entradas = {{ entradas | default(0) }};
+        const saidas = {{ saídas | default(0) }};
+        const total = {{ total | default(0) }};
+        let showPercentage = false; // Variável de controle
+
+        const ctx = document.getElementById('resumoChart').getContext('2d');
+        const resumoChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Entradas', 'Saídas', 'Total'],
                 datasets: [{
                     label: 'Valor em R$',
-                    data: [{{ entradas }}, {{ saidas }}, {{ total }}],
+                    data: [entradas, saidas, total],
                     backgroundColor: [
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(75, 192, 192, 0.2)'
+                        'rgba(54, 162, 235, 0.2)', // Azul
+                        'rgba(255, 99, 132, 0.2)', // Vermelho
+                        'rgba(75, 192, 192, 0.2)'  // Verde
                     ],
                     borderColor: [
                         'rgba(54, 162, 235, 1)',
@@ -46,7 +68,57 @@
             options: {
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                // Formatação baseada no modo atual
+                                return showPercentage ? value.toFixed(2) + '%' : 'R$ ' + value.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        document.getElementById('toggleButton').addEventListener('click', function() {
+            showPercentage = !showPercentage; // Alterna o estado
+            const totalEntradasSaidas = entradas + saidas;
+            resumoChart.data.datasets[0].data = showPercentage 
+                ? [entradas / totalEntradasSaidas * 100, saidas / totalEntradasSaidas * 100, 100] 
+                : [entradas, saidas, total];
+            resumoChart.update(); // Atualiza o gráfico
+            this.textContent = showPercentage ? 'Mostrar em Valor' : 'Mostrar em Porcentagem'; // Atualiza o texto do botão
+        });
+    </script>
+
+    <script>
+        // Gráfico de Pizza
+        var pieCtx = document.getElementById('pieChart').getContext('2d');
+        var pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Entradas', 'Saídas', 'Saldo'],
+                datasets: [{
+                    label: 'Distribuição Financeira',
+                    data: [{{ entradas | default(0) }}, {{ saídas | default(0) }}, {{ saldo | default(0) }}],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.5)', // Entradas
+                        'rgba(255, 99, 132, 0.5)', // Saídas
+                        'rgba(75, 192, 192, 0.5)'   // Saldo
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
                     }
                 }
             }
