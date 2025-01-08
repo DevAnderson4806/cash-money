@@ -1,53 +1,58 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Resumo Mensal</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link rel="stylesheet" href="../static/resumo.css">
-        <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
-    </head>
-    <body>
-        <h1>Resumo Mensal</h1>
-        <p>Entradas: R$ {{ entradas }}</p>
-        <p>Saídas: R$ {{ saidas }}</p>
-        <p>Saldo: R$ {{ saldo_atual }}</p>
-        <!-- Exemplo de exibição do gráfico de resumo -->
-        <h2>Resumo Mensal</h2>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumo Mensal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../static/resumo.css">
+    <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+</head>
+<body>
+    <h1>Resumo Mensal</h1>
+    <p>Entradas: R$ {{ entradas }}</p>
+    <p>Saídas: R$ {{ saidas }}</p>
+    <p>Saldo: R$ {{ saldo_atual }}</p>
+    <div>
+        <a href="/exportar_csv" class="btn">Exportar para CSV</a>
+        <a href="/exportar_pdf" class="btn">Exportar para PDF</a>
+    </div>
+    
+    <h2>Gráfico Resumo Mensal</h2>
     <canvas id="resumoChart" width="400" height="200"></canvas>
-    <p>Total: R$ {{ total }}</p> <!-- Exibe o total abaixo do gráfico -->
+    <p>Total: R$ {{ total }}</p>
 
     <script>
         var ctx = document.getElementById('resumoChart').getContext('2d');
         var resumoChart = new Chart(ctx, {
-            type: 'bar', // Tipo do gráfico (barras)
+            type: 'bar',
             data: {
-                labels: ['Entradas', 'Saídas', 'Total'], // Rótulos para o gráfico (incluindo o total)
+                labels: ['Entradas', 'Saídas', 'Total'],
                 datasets: [{
-                    label: 'Valor em R$', // Nome da série de dados
-                    data: [{{ entradas }}, {{ saidas }}, {{ total }}], // Dados que vêm do Flask
+                    label: 'Valor em R$',
+                    data: [{{ entradas }}, {{ saidas }}, {{ total }}],
                     backgroundColor: [
-                        'rgba(54, 162, 235, 0.2)', // Cor de fundo para as barras de Entradas
-                        'rgba(255, 99, 132, 0.2)', // Cor de fundo para as barras de Saídas
-                        'rgba(75, 192, 192, 0.2)'  // Cor de fundo para a barra de Total
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
                     ],
                     borderColor: [
-                        'rgba(54, 162, 235, 1)', // Cor da borda para as barras de Entradas
-                        'rgba(255, 99, 132, 1)', // Cor da borda para as barras de Saídas
-                        'rgba(75, 192, 192, 1)'  // Cor da borda para a barra de Total
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(75, 192, 192, 1)'
                     ],
-                    borderWidth: 1 // Largura da borda
+                    borderWidth: 1
                 }]
             },
             options: {
                 scales: {
                     y: {
-                        beginAtZero: true // O eixo Y começa do zero
+                        beginAtZero: true
                     }
                 }
             }
         });
     </script>
 
-        <a href="/">Voltar</a>
-    </body>
+    <a href="/">Voltar</a>
+</body>
 </html>
