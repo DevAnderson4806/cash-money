@@ -118,6 +118,13 @@ def resumo():
         (f"{mes_atual}%",),
     )
     resumo = cursor.fetchall()
+
+    # Obter transações detalhadas
+    cursor.execute(
+        """SELECT descricao, valor, tipo, categoria, data FROM transacoes WHERE data LIKE ? ORDER BY data DESC""",
+        (f"{mes_atual}%",),
+    )
+    transacoes = cursor.fetchall()
     conn.close()
 
     # Calcular entradas, saídas e total
@@ -126,7 +133,7 @@ def resumo():
     total = entradas - saidas
 
     return render_template(
-        "resumo.html", entradas=entradas, saidas=saidas, total=total
+        "resumo.html", entradas=entradas, saidas=saidas, total=total, transacoes=transacoes
     )
 
 # Gerar PDF com o resumo e transações
@@ -158,7 +165,13 @@ def exportar_pdf():
     # Criar o PDF
     pdf = FPDF()
     pdf.add_page()
+    
+    # Definindo fundo preto
+    pdf.set_fill_color(0, 0, 0)
+    pdf.rect(0, 0, 210, 297, 'F')  # Fundo preto
+
     pdf.set_font("Arial", size=12)
+    pdf.set_text_color(0, 255, 255)  # Azul neon
 
     pdf.cell(200, 10, txt="Resumo Mensal", ln=True, align='C')
     pdf.cell(200, 10, txt=f"Mês: {mes_atual}", ln=True)
@@ -365,8 +378,6 @@ def excluir_planejamento(id):
 
 # Executar o servidor
 if __name__ == "__main__":
-    import os
-
     # Obtém a porta a partir da variável de ambiente PORT, padrão 5000
     PORT = int(os.getenv("PORT", 5000))
 
