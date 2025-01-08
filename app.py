@@ -68,7 +68,7 @@ def index():
         transacoes=transacoes,
         tipo_filtro=tipo_filtro,
         categoria_filtro=categoria_filtro,
-        username=username,  # Passar o nome do usuário para o template
+        username=username,
     )
 
 # Registrar transação
@@ -123,14 +123,13 @@ def resumo():
     # Calcular entradas, saídas e total
     entradas = sum(r[1] for r in resumo if r[0] == "entrada")
     saidas = sum(r[1] for r in resumo if r[0] == "saida")
-    total = entradas - saidas  # Calculando o total
+    total = entradas - saidas
 
-    # Retornar o template com as variáveis
     return render_template(
         "resumo.html", entradas=entradas, saidas=saidas, total=total
     )
 
-# Gerar PDF com o resumo
+# Gerar PDF com o resumo e transações
 @app.route("/exportar_pdf")
 @login_required
 def exportar_pdf():
@@ -142,6 +141,13 @@ def exportar_pdf():
         (f"{mes_atual}%",),
     )
     resumo = cursor.fetchall()
+
+    # Obter transações detalhadas
+    cursor.execute(
+        """SELECT descricao, valor, tipo, categoria, data FROM transacoes WHERE data LIKE ? ORDER BY data DESC""",
+        (f"{mes_atual}%",),
+    )
+    transacoes = cursor.fetchall()
     conn.close()
 
     # Calcular entradas, saídas e total
@@ -159,6 +165,14 @@ def exportar_pdf():
     pdf.cell(200, 10, txt=f"Entradas: R$ {entradas:.2f}", ln=True)
     pdf.cell(200, 10, txt=f"Saídas: R$ {saidas:.2f}", ln=True)
     pdf.cell(200, 10, txt=f"Total: R$ {total:.2f}", ln=True)
+
+    # Adicionar transações detalhadas
+    pdf.cell(200, 10, txt="Transações Detalhadas:", ln=True)
+    pdf.cell(200, 10, txt="Descrição | Valor | Tipo | Categoria | Data", ln=True)
+
+    for transacao in transacoes:
+        descricao, valor, tipo, categoria, data = transacao
+        pdf.cell(200, 10, txt=f"{descricao} | R$ {valor:.2f} | {tipo} | {categoria} | {data}", ln=True)
 
     pdf_file = f'resumo_{mes_atual}.pdf'
     pdf.output(pdf_file)
@@ -264,10 +278,6 @@ def logout():
     session.clear()  # Remove todos os dados da sessão
     flash("Você saiu com sucesso.")
     return redirect("/login")
-
-@app.route("/")
-def home():
-    return "Hello, World!"
 
 def conectar_planejamento_db():
     return sqlite3.connect("planejamento.db")
