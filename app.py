@@ -60,7 +60,8 @@ def index():
     cursor.execute("SELECT username FROM usuarios WHERE id = ?", (session["user_id"],))
     user = cursor.fetchone()
     conn.close()
-    username = user[0] if user else "Usuário"
+
+    username = user[0] if user else "Usuário"  # Defina username aqui
 
     return render_template(
         "index.html",
@@ -79,13 +80,12 @@ def registrar():
     tipo = request.form["tipo"]
     categoria = request.form["categoria"]
     data = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    # Adicione o user_id na inserção
+
     conn = conectar_financas_db()
     cursor = conn.cursor()
     cursor.execute(
         """INSERT INTO transacoes (descricao, valor, tipo, categoria, data, user_id) VALUES (?, ?, ?, ?, ?, ?)""",
-        (descricao, valor, tipo, categoria, data, session["user_id"]),
+        (descricao, valor, tipo, categoria, data, session["user_id"]),  # Certifique-se de incluir session["user_id"]
     )
     conn.commit()
     conn.close()
