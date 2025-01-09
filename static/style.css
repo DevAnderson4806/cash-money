@@ -317,6 +317,10 @@ table th {
     background-color: red;
 }
 
+.id2 {
+    color: black;
+}
+
 /* Responsividade */
 @media (max-width: 600px) {
     form, ul {

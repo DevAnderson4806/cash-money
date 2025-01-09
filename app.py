@@ -38,8 +38,8 @@ def index():
     conn = conectar_financas_db()
     cursor = conn.cursor()
 
-    query = "SELECT * FROM transacoes WHERE 1=1"
-    params = []
+    query = "SELECT * FROM transacoes WHERE user_id = ?"
+    params = [session["user_id"]]  # Filtra por user_id
 
     if tipo_filtro:
         query += " AND tipo = ?"
@@ -50,7 +50,6 @@ def index():
         params.append(categoria_filtro)
 
     query += " ORDER BY data DESC"
-
     cursor.execute(query, params)
     transacoes = cursor.fetchall()
     conn.close()
@@ -80,12 +79,13 @@ def registrar():
     tipo = request.form["tipo"]
     categoria = request.form["categoria"]
     data = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+    
+    # Adicione o user_id na inserção
     conn = conectar_financas_db()
     cursor = conn.cursor()
     cursor.execute(
-        """INSERT INTO transacoes (descricao, valor, tipo, categoria, data) VALUES (?, ?, ?, ?, ?)""",
-        (descricao, valor, tipo, categoria, data),
+        """INSERT INTO transacoes (descricao, valor, tipo, categoria, data, user_id) VALUES (?, ?, ?, ?, ?, ?)""",
+        (descricao, valor, tipo, categoria, data, session["user_id"]),
     )
     conn.commit()
     conn.close()

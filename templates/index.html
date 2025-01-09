@@ -7,6 +7,47 @@
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="manifest" href="../static/manifest.json">
     <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+    <style>
+        body {
+            position: relative;
+            font-family: Arial, sans-serif;
+        }
+
+        .user-menu {
+            position: fixed;
+            top: 70px; /* Ajuste a posição conforme necessário */
+            left: 20px;
+            display: none; /* Inicialmente escondido */
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px;
+        }
+
+        .user-icon {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #4CAF50; /* Cor da bolinha */
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .user-icon img {
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 
 <body>
@@ -78,17 +119,51 @@
         </ul>
     </nav>
 
+    <div class="user-icon" id="userIcon">
+        <span id="userInitial">{{ username[0] }}</span> <!-- Exibe a letra inicial do nome do usuário -->
+    </div>
+
+    <div class="user-menu" id="userMenu">
+        {% if username %}
+            <h2 class="id2">Bem-vindo, {{ username }}!</h2>
+        {% endif %}
+        <a href="/usuario">Visualizar Dados</a><br>
+        <a href="/usuario/editar">Editar Dados</a><br>
+        <ul>
+            {% if 'user_id' in session %}
+                <li><a href="/logout" class="dinamico">Deslogar</a></li> <!-- A classe 'dinamico' aplica estilo verde -->
+            {% else %}
+                <li><a href="/login">Login</a></li>
+                <li><a href="/registro">Registrar</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
     <script src="/static/script.js"></script>
-    <script>    
+    <script>
+        const userIcon = document.getElementById('userIcon');
+        const userMenu = document.getElementById('userMenu');
+
+        userIcon.addEventListener('click', () => {
+            userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Fechar o menu se clicar fora dele
+        window.addEventListener('click', (event) => {
+            if (!userIcon.contains(event.target) && !userMenu.contains(event.target)) {
+                userMenu.style.display = 'none';
+            }
+        });
+    </script>
+    <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('C:/Users/user/OneDrive/Área de Trabalho/finanças/service-worker.js').then(function(registration) {
+            navigator.serviceWorker.register('/static/service-worker.js').then(function(registration) {
                 console.log('Service Worker registrado com sucesso:', registration);
             }).catch(function(error) {
                 console.log('Erro ao registrar o Service Worker:', error);
-        });
+            });
         }
     </script>
 
 </body>
-
 </html>

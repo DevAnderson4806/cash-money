@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Usuário</title>
+</head>
+<body>
+    <h1>Editar Usuário</h1>
+    <form action="/usuario/editar" method="post">
+        <input type="text" name="username" value="{{ dados[0] }}" required>
+        <input type="password" name="password" placeholder="Nova Senha (opcional)">
+        <button type="submit">Salvar</button>
+    </form>
+    <a href="/usuario">Voltar</a>
+</body>
+</html>
