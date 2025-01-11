@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>Resumo Mensal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,15 +12,9 @@
             text-align: center; /* Centraliza o texto */
         }
 
-        /*canvas {
-            width: 100% !important;  /* Faz o canvas ocupar 100% da largura do contêiner */
-            height: auto !important;  /* Mantém a proporção */
-            max-width: 400px;         /* Define um tamanho máximo */
-            margin: 20px auto;       /* Centraliza os gráficos */
-        } */
     </style>
 </head>
-<body>
+<body> 
     <h1>Resumo Mensal</h1>
     <p>Entradas: R$ {{ entradas }}</p>
     <p>Saídas: R$ {{ saídas }}</p>
@@ -32,7 +27,7 @@
     
     <h2>Gráfico Resumo Mensal</h2>
     <button id="toggleButton">Mostrar em Porcentagem</button>
-    <canvas id="resumoChart"></canvas>
+    <canvas id="resumoChart" class="grafics" ></canvas>
     <p>Total: R$ {{ total }}</p>
 
     <h2>Distribuição de Entradas e Saídas</h2>

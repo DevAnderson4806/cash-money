@@ -1,13 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Saldo Atual</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Saldo</title>
+    <link rel="stylesheet" href="../static/resumo.css">
     <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
-    <link rel="stylesheet" href="../static/saldo.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #111;
+            color: #e5e5e5;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00e5ff;
+            margin-top: 20px;
+        }
+
+        .transaction-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .transaction-list li {
+            background: rgba(0, 0, 0, 0.7);
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .transaction-list li:hover {
+            background-color: #00d0ee;
+            color: #121212;
+        }
+
+        .btn {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #00e5ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #ff00f7;
+        }
+
+        @media (max-width: 600px) {
+            .btn {
+                padding: 8px 15px;
+            }
+        }
+    </style>
+    <script>
+        function confirmarExclusao(event) {
+            if (!confirm("Tem certeza que deseja excluir esta transação?")) {
+                event.preventDefault();
+            }
+        }
+    </script>
 </head>
 <body>
-    <h1>Saldo Atual</h1>
-    <p>R$ {{ saldo }}</p>
-    <a href="/">Voltar</a>
+    <header>
+        <h1>Página de Saldo</h1>
+    </header>
+    <main>
+        <p>Saldo Total: R$ {{ saldo }}</p>
+
+        <ul class="transaction-list">
+            {% for t in transacoes %}
+            <li>
+                {{ t[4] }} - {{ t[1] }}: R$ {{ t[2] }} ({{ t[3] }})
+                <form action="/excluir/{{ t[0] }}" method="post" style="display:inline;" class="form-excluir">
+                    <button type="submit" onclick="confirmarExclusao(event)" class="excluir">Excluir</button>
+                </form>
+                <a href="/editar/{{ t[0] }}">Editar</a>
+            </li>
+            {% else %}
+            <li>Nenhuma transação encontrada.</li>
+            {% endfor %}
+        </ul>
+
+        <div>
+            <a href="/">Voltar</a>
+            <a href="/exportar_csv" class="btn">Exportar para CSV</a>
+            <a href="/exportar_pdf" class="btn">Exportar para PDF</a>
+        </div>
+    </main>
 </body>
 </html>

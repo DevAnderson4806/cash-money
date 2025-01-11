@@ -29,17 +29,12 @@ def login_required(f):
     return decorated_function
 
 # Página inicial
-@app.route("/")
-@login_required
-def index():
-    tipo_filtro = request.args.get("tipo", "")
-    categoria_filtro = request.args.get("categoria", "")
-
+def obter_transacoes(user_id, tipo_filtro="", categoria_filtro="", page=1, per_page=5):
     conn = conectar_financas_db()
     cursor = conn.cursor()
 
     query = "SELECT * FROM transacoes WHERE user_id = ?"
-    params = [session["user_id"]]  # Filtra por user_id
+    params = [user_id]
 
     if tipo_filtro:
         query += " AND tipo = ?"
@@ -49,10 +44,31 @@ def index():
         query += " AND categoria = ?"
         params.append(categoria_filtro)
 
-    query += " ORDER BY data DESC"
+    query += " ORDER BY data DESC LIMIT ? OFFSET ?"
+    params.append(per_page)
+    params.append((page - 1) * per_page)
+
     cursor.execute(query, params)
     transacoes = cursor.fetchall()
+
+    # Obter o total de transações
+    cursor.execute("SELECT COUNT(*) FROM transacoes WHERE user_id = ?", (user_id,))
+    total_transacoes = cursor.fetchone()[0]
     conn.close()
+
+    total_pages = (total_transacoes + per_page - 1) // per_page
+    return transacoes, total_transacoes, total_pages
+
+@app.route("/")
+@login_required
+def index():
+    tipo_filtro = request.args.get("tipo", "")
+    categoria_filtro = request.args.get("categoria", "")
+    page = request.args.get("page", 1, type=int)
+
+    transacoes, total_transacoes, total_pages = obter_transacoes(
+        session["user_id"], tipo_filtro, categoria_filtro, page
+    )
 
     # Obter o nome do usuário logado
     conn = conectar_usuarios_db()
@@ -61,7 +77,7 @@ def index():
     user = cursor.fetchone()
     conn.close()
 
-    username = user[0] if user else "Usuário"  # Defina username aqui
+    username = user[0] if user else "Usuário"
 
     return render_template(
         "index.html",
@@ -69,7 +85,11 @@ def index():
         tipo_filtro=tipo_filtro,
         categoria_filtro=categoria_filtro,
         username=username,
+        page=page,
+        total_pages=total_pages,
     )
+
+
 
 # Registrar transação
 @app.route("/registrar", methods=["POST"])

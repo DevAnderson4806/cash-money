@@ -231,15 +231,15 @@ a:hover {
 
 /* Adicione isso ao seu arquivo CSS ou dentro de <style> no <head> */
 canvas {
-    width: 100% !important;  /* Faz o canvas ocupar 100% da largura do contêiner */
-    height: auto !important;  /* Mantém a proporção */
+    width: 100% ;   /*Faz o canvas ocupar 100% da largura do contêiner */
+    height: auto ;  /* Mantém a proporção */
     max-width: 600px;         /* Define um tamanho máximo */
-    margin: 20px 0;           /* Define um tamanho máximo, se desejado */
+    margin: 20px 0;            /*Define um tamanho máximo, se desejado*/ 
 }
 
 
 /* Responsividade */
-@media (max-width: 600px) {
+@media (max-width: 600px)  {
 
     form,
     ul {
@@ -254,5 +254,47 @@ canvas {
     button.dinamico,
     button[type="submit"] {
         width: 100%;
+    }
+}
+
+@media (max-width: 600px ) and (min-width: 100px) {
+
+    h1 {
+        font-size: 50px;
+        margin-top: 50px;
+        border: 2px solid #00e5ff;
+        border-radius: 5px;
+    }
+
+    p {
+        font-size: 25px;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        font-size: 15px;
+        padding: 10px 30px;
+    }
+
+    h2 {
+        font-size: 40px;
+        margin-bottom: 100px;
+    }
+
+    button {
+        font-size: 15px;
+        padding: 20px 30px;
+        margin-bottom: 80px;
+    }
+
+    canvas {
+        width: 100% ;
+        height: auto;
+        max-width: 1000px;
+        min-width: 100px; 
+    }
+
+    a {
+        margin-bottom: 50px;
     }
 }
