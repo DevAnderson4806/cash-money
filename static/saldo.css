@@ -19,8 +19,9 @@ h1 {
     /* Cor azul neon */
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin-top: 20px;
-    font-size: 2.5rem;
+    padding-top: 40px;
+    margin-bottom: 120px;
+    font-size: 3.5rem;
     text-shadow: 0 0 8px rgba(0, 229, 255, 0.8);
     /* Brilho leve */
 }
@@ -202,10 +203,10 @@ button[type="submit"]:hover {
 }
 
 .excluir {
-    width: 100px;
-    height: 50px;
-    padding: 10px;
-    margin: 0px;
+    width: 150px;
+    height: 45px;
+    padding: 25px;
+    margin: 7px;
 }
 
 .form-excluir {
@@ -213,9 +214,88 @@ button[type="submit"]:hover {
     padding: 0px;
 }
 
-/* Responsividade */
-@media (max-width: 600px) {
+a {
+    color: yellow;
+    background-color: #2575fc;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 30px;
+    margin-bottom: 25px;
+    padding: 10px 10px;
+    border-radius: 4px;
+}
 
+div {
+    display: flex;
+    flex-direction: column;
+}
+
+a:hover {
+    color: #fff;
+    background-color: green;
+    padding: 10px 10px;
+    border-radius: 4px;
+}
+
+/* Adicione isso ao seu arquivo CSS ou dentro de <style> no <head> */
+canvas {
+    width: 100% ;   /*Faz o canvas ocupar 100% da largura do contêiner */
+    height: auto ;  /* Mantém a proporção */
+    max-width: 600px;         /* Define um tamanho máximo */
+    margin: 20px 0;            /*Define um tamanho máximo, se desejado*/ 
+}
+
+h2 {
+    font-size: 2.0rem;
+    margin-bottom: 130px;
+    margin-top: 300px;
+}
+
+h1 {
+    color: #00e5ff;
+    margin-top: 20px;
+}
+
+.transaction-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.transaction-list li {
+    background: rgba(0, 0, 0, 0.7);
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    position: relative;
+}
+
+.transaction-list li:hover {
+    background-color: #00d0ee;
+    color: #121212;
+}
+
+.btn {
+    margin: 20px;
+    padding: 10px 20px;
+    background-color: #00a1ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: green;
+}
+
+canvas {
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+
+/* Responsividade */
+@media (max-width: 600px ) and (min-width: 0px) {
     form,
     ul {
         margin: 10px;
@@ -229,5 +309,103 @@ button[type="submit"]:hover {
     button.dinamico,
     button[type="submit"] {
         width: 100%;
+    }
+
+    h1 {
+        font-size: 45px;
+        margin-top: 50px;
+        border: 2px solid #00e5ff;
+        border-radius: 5px;
+        padding-bottom: 30px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    p {
+        font-size: 25px;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        font-size: 17px;
+        padding: 10px 20px;
+        margin-left: 145px;
+    }
+
+    h2 {
+        font-size: 40px;
+        margin-bottom: 100px;
+    }
+
+    button {
+        font-size: 15px;
+        padding: 20px 30px;
+        margin-bottom: 80px;
+    }
+
+    canvas {
+        width: 100% ;
+        height: auto;
+        max-width: 1000px;
+        min-width: 100px; 
+    }
+
+    a {
+        margin-bottom: 50px;
+        width: 180px;
+    }
+
+    div a {
+        margin-left: 150px;
+    }
+}
+
+@media (max-width: 499px ) and (min-width: 0px) {
+
+    h1 {
+        font-size: 50px;
+        margin-top: 50px;
+        border: 2px solid #00e5ff;
+        border-radius: 5px;
+    }
+
+    p {
+        font-size: 25px;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        font-size: 15px;
+        padding: 10px 30px;
+    }
+
+    h2 {
+        font-size: 40px;
+        margin-bottom: 100px;
+    }
+
+    button {
+        font-size: 15px;
+        padding: 20px 30px;
+        margin-bottom: 80px;
+    }
+
+    canvas {
+        width: 100% ;
+        height: auto;
+        max-width: 1000px;
+        min-width: 100px; 
+    }
+
+    a {
+        margin-bottom: 50px;
+    }
+
+    div a {
+        margin-left: 110px;
+    }
+
+    .btn {
+        margin-left: 90px;
     }
 }

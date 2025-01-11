@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página de Saldo</title>
-    <link rel="stylesheet" href="../static/resumo.css">
+    <link rel="stylesheet" href="../static/saldo.css">
     <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -16,49 +17,6 @@
             text-align: center;
         }
 
-        h1 {
-            color: #00e5ff;
-            margin-top: 20px;
-        }
-
-        .transaction-list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .transaction-list li {
-            background: rgba(0, 0, 0, 0.7);
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
-            position: relative;
-        }
-
-        .transaction-list li:hover {
-            background-color: #00d0ee;
-            color: #121212;
-        }
-
-        .btn {
-            margin: 20px;
-            padding: 10px 20px;
-            background-color: #00e5ff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn:hover {
-            background-color: #ff00f7;
-        }
-
-        @media (max-width: 600px) {
-            .btn {
-                padding: 8px 15px;
-            }
-        }
     </style>
     <script>
         function confirmarExclusao(event) {
@@ -94,6 +52,114 @@
             <a href="/exportar_csv" class="btn">Exportar para CSV</a>
             <a href="/exportar_pdf" class="btn">Exportar para PDF</a>
         </div>
+
+        <h2>Distribuição de saldo por categoria</h2>
+        <canvas id="myPieChart"></canvas>
+
+        <h2>Comparação de Gastos Mensais</h2>
+        <canvas id="myBarChart"></canvas>
+
+        <h2>Evolução do Saldo</h2>
+        <canvas id="myLineChart"></canvas>
+
+        <h2>Distribuição de Gastos</h2>
+        <canvas id="myAreaChart"></canvas>
+
+        <h2>Histograma de Gastos</h2>
+        <canvas id="myHistogram"></canvas>
+
     </main>
+
+    <script>
+        // Supondo que você tenha um dicionário de despesas por categoria
+        const despesasPorCategoria = {{ despesas_por_categoria|tojson }};
+        const gastosMensais = {{ gastos_mensais|tojson }};
+        const saldoMensal = {{ saldo_mensal|tojson }};
+        
+        // Mapear categorias e valores
+        const categorias = despesasPorCategoria.map(d => d[0]); // Assume que é uma tupla [categoria, valor]
+        const valores = despesasPorCategoria.map(d => d[1]);
+
+        // Gráfico de Pizza
+        const ctxPie = document.getElementById('myPieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: categorias,
+                datasets: [{
+                    label: 'Despesas',
+                    data: valores,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#4BC0C0'],
+                }]
+            }
+        });
+
+        // Gráfico de Barras
+        const meses = gastosMensais.map(g => g[0]); // Assume que é uma tupla [mes, total]
+        const valoresMensais = gastosMensais.map(g => g[1]);
+
+        const ctxBar = document.getElementById('myBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: meses,
+                datasets: [{
+                    label: 'Gastos Mensais',
+                    data: valoresMensais,
+                    backgroundColor: '#36A2EB',
+                }]
+            }
+        });
+
+        // Gráfico de Linhas
+        const ctxLine = document.getElementById('myLineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: meses,
+                datasets: [{
+                    label: 'Evolução do Saldo',
+                    data: saldoMensal, // Certifique-se de que isso é uma lista de valores
+                    fill: false,
+                    borderColor: '#FF6384'
+                }]
+            }
+        });
+
+        // Gráfico de Área
+        const ctxArea = document.getElementById('myAreaChart').getContext('2d');
+        new Chart(ctxArea, {
+            type: 'line',
+            data: {
+                labels: meses,
+                datasets: [{
+                    label: 'Saldo Acumulado',
+                    data: saldoMensal, // Valores dinâmicos
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                }]
+            }
+        });
+
+        // Gráfico de Histograma
+        const ctxHistogram = document.getElementById('myHistogram').getContext('2d');
+        const histogramLabels = ['R$0-R$50', 'R$51-R$100', 'R$101-R$200', 'R$201-R$300']; // Exemplo de categorias
+        const histogramData = [12, 19, 3, 5]; // Substitua com dados dinâmicos conforme necessário
+
+        new Chart(ctxHistogram, {
+            type: 'bar',
+            data: {
+                labels: histogramLabels,
+                datasets: [{
+                    label: 'Número de Gastos',
+                    data: histogramData,
+                    backgroundColor: '#FFCE56',
+                }]
+            }
+        });
+
+    </script>
+
 </body>
 </html>

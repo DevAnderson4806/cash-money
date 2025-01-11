@@ -116,17 +116,61 @@ def registrar():
 @app.route("/saldo")
 @login_required
 def saldo():
+    # Conectar ao banco de dados
     conn = conectar_financas_db()
     cursor = conn.cursor()
+    
+    # Calcular o saldo
     cursor.execute(
-        """SELECT SUM(CASE WHEN tipo = 'entrada' THEN valor ELSE -valor END) AS saldo FROM transacoes"""
+        """SELECT SUM(CASE WHEN tipo = 'entrada' THEN valor ELSE -valor END) AS saldo 
+            FROM transacoes WHERE user_id = ?""",
+        (session["user_id"],)
     )
     saldo_atual = cursor.fetchone()[0]
-    conn.close()
     saldo_atual = saldo_atual if saldo_atual else 0.0
-    return render_template("saldo.html", saldo=saldo_atual)
 
-# Exibir resumo mensal
+    # Obter transações
+    cursor.execute(
+        """SELECT * FROM transacoes WHERE user_id = ? 
+            ORDER BY data DESC LIMIT 5""",
+        (session["user_id"],)
+    )
+    transacoes = cursor.fetchall()
+
+    # Obter despesas por categoria
+    cursor.execute(
+        """SELECT categoria, SUM(valor) AS valor FROM transacoes 
+            WHERE user_id = ? GROUP BY categoria""",
+        (session["user_id"],)
+    )
+    despesas_por_categoria = cursor.fetchall()
+
+    # Obter gastos mensais
+    cursor.execute(
+        """SELECT strftime('%Y-%m', data) AS mes, SUM(valor) AS total 
+            FROM transacoes WHERE user_id = ? GROUP BY mes""",
+        (session["user_id"],)
+    )
+    gastos_mensais = cursor.fetchall()
+
+    # Obter saldo mensal (exemplo)
+    cursor.execute(
+        """SELECT strftime('%Y-%m', data) AS mes, SUM(CASE WHEN tipo = 'entrada' THEN valor ELSE -valor END) 
+            FROM transacoes WHERE user_id = ? GROUP BY mes""",
+        (session["user_id"],)
+    )
+    saldo_mensal = cursor.fetchall()
+
+    # Fechar a conexão
+    conn.close()
+
+    # Preparar dados para o template
+    return render_template("saldo.html", 
+                            saldo=saldo_atual, 
+                            transacoes=transacoes, 
+                            despesas_por_categoria=despesas_por_categoria, 
+                            gastos_mensais=gastos_mensais, 
+                            saldo_mensal=saldo_mensal)
 from datetime import datetime
 from flask import render_template
 
