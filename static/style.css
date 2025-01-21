@@ -3,7 +3,7 @@
     top: 70px; /* Ajuste a posição conforme necessário */
     right: 20px;
     display: none; /* Inicialmente escondido */
-    background: white;
+    background: #112;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -321,8 +321,8 @@ table th, table td {
 }
 
 table th {
-    background-color: #6a11cb;
-    color: white;
+    background-color: #00e5ff;
+    color: black;
 }
 
 .btn {
@@ -353,7 +353,11 @@ table th {
 }
 
 .id2 {
-    color: black;
+    color: white;
+}
+
+#sair-menu {
+    margin-left: 20px;
 }
 
 /* Responsividade */

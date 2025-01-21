@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/style.css">
+    <title>Notificações</title>
+</head>
+<body>
+    <h1>Todas Notificações</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mensagem</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for notificacao in notificacoes %}
+            <tr>
+                <td>{{ notificacao[0] }}</td>
+                <td>{{ notificacao[2] }}</td>
+                <td>{{ notificacao[4] }}</td>
+                <td>{{ 'Lida' if notificacao[3] else 'Não Lida' }}</td>
+                <td>
+                    {% if not notificacao[3] %}
+                        <a href="{{ url_for('marcar_lida', notificacao_id=notificacao[0]) }}">Marcar como lida</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                    <form action="{{ url_for('excluir_notificacao', notificacao_id=notificacao[0]) }}" method="POST" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta notificação?');">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div>
+        {% if pagina > 1 %}
+            <a href="{{ url_for('notificacoes', pagina=pagina-1) }}">Anterior</a>
+        {% endif %}
+        <span>Página {{ pagina }} de {{ total_paginas }}</span>
+        {% if pagina < total_paginas %}
+            <a href="{{ url_for('notificacoes', pagina=pagina+1) }}">Próxima</a>
+        {% endif %}
+    </div>
+    <a href="/">Voltar</a>
+</body>
+</html>

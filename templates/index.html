@@ -69,7 +69,8 @@
     <div class="navigation">
         <a href="/saldo">Ver Saldo</a> | 
         <a href="/resumo">Resumo Mensal</a> | 
-        <a href="/planejamento">Planejamento Financeiro</a> <!-- Link para planejamento -->
+        <a href="/planejamento">Planejamento Financeiro</a> | <!-- Link para planejamento -->
+        <a href="/notificacoes">Notificações</a> <!-- Link para notificações -->
     </div>
 
     <form action="/registrar" method="post" class="transaction-form">
@@ -131,7 +132,7 @@
         <a href="/usuario/editar">Editar Dados</a><br>
         <ul>
             {% if 'user_id' in session %}
-                <li><a href="/logout" class="dinamico">Deslogar</a></li> <!-- A classe 'dinamico' aplica estilo verde -->
+                <li><a href="/logout" class="dinamico" id="sair-menu">Deslogar</a></li> <!-- A classe 'dinamico' aplica estilo verde -->
             {% else %}
                 <li><a href="/login">Login</a></li>
                 <li><a href="/registro">Registrar</a></li>

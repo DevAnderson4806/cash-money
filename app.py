@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, session, send_file
+from flask import Flask, jsonify, render_template, request, redirect, flash, session, send_file, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 from datetime import datetime
@@ -17,6 +17,10 @@ def conectar_financas_db():
 def conectar_usuarios_db():
     return sqlite3.connect("usuarios.db")
 
+# Função para conectar ao banco de dados de planejamento
+def conectar_planejamento_db():
+    return sqlite3.connect("planejamento.db")
+
 # Decorador para verificar se o usuário está logado
 def login_required(f):
     @wraps(f)
@@ -27,6 +31,37 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+# Criar tabela de notificações
+def criar_tabela_notificacoes():
+    conn = conectar_financas_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notificacoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            mensagem TEXT,
+            lida BOOLEAN DEFAULT 0,
+            data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES usuarios(id)
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# Função para criar notificações
+def criar_notificacao(user_id, mensagem):
+    try:
+        conn = conectar_financas_db()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO notificacoes (user_id, mensagem) VALUES (?, ?)", (user_id, mensagem))
+        conn.commit()
+        return cursor.lastrowid  # Retorna o ID da notificação criada
+    except Exception as e:
+        print(f"Erro ao criar notificação: {e}")
+        return None
+    finally:
+        conn.close()
 
 # Página inicial
 def obter_transacoes(user_id, tipo_filtro="", categoria_filtro="", page=1, per_page=5):
@@ -89,8 +124,6 @@ def index():
         total_pages=total_pages,
     )
 
-
-
 # Registrar transação
 @app.route("/registrar", methods=["POST"])
 @login_required
@@ -105,10 +138,15 @@ def registrar():
     cursor = conn.cursor()
     cursor.execute(
         """INSERT INTO transacoes (descricao, valor, tipo, categoria, data, user_id) VALUES (?, ?, ?, ?, ?, ?)""",
-        (descricao, valor, tipo, categoria, data, session["user_id"]),  # Certifique-se de incluir session["user_id"]
+        (descricao, valor, tipo, categoria, data, session["user_id"]),
     )
+    
     conn.commit()
     conn.close()
+
+    # Criar notificação
+    criar_notificacao(session["user_id"], f"Transação registrada: {descricao} - R$ {valor:.2f}")
+    
     flash("Transação registrada com sucesso!")
     return redirect("/")
 
@@ -116,11 +154,9 @@ def registrar():
 @app.route("/saldo")
 @login_required
 def saldo():
-    # Conectar ao banco de dados
     conn = conectar_financas_db()
     cursor = conn.cursor()
-    
-    # Calcular o saldo
+
     cursor.execute(
         """SELECT SUM(CASE WHEN tipo = 'entrada' THEN valor ELSE -valor END) AS saldo 
             FROM transacoes WHERE user_id = ?""",
@@ -129,7 +165,6 @@ def saldo():
     saldo_atual = cursor.fetchone()[0]
     saldo_atual = saldo_atual if saldo_atual else 0.0
 
-    # Obter transações
     cursor.execute(
         """SELECT * FROM transacoes WHERE user_id = ? 
             ORDER BY data DESC LIMIT 5""",
@@ -137,7 +172,6 @@ def saldo():
     )
     transacoes = cursor.fetchall()
 
-    # Obter despesas por categoria
     cursor.execute(
         """SELECT categoria, SUM(valor) AS valor FROM transacoes 
             WHERE user_id = ? GROUP BY categoria""",
@@ -145,7 +179,6 @@ def saldo():
     )
     despesas_por_categoria = cursor.fetchall()
 
-    # Obter gastos mensais
     cursor.execute(
         """SELECT strftime('%Y-%m', data) AS mes, SUM(valor) AS total 
             FROM transacoes WHERE user_id = ? GROUP BY mes""",
@@ -153,7 +186,6 @@ def saldo():
     )
     gastos_mensais = cursor.fetchall()
 
-    # Obter saldo mensal (exemplo)
     cursor.execute(
         """SELECT strftime('%Y-%m', data) AS mes, SUM(CASE WHEN tipo = 'entrada' THEN valor ELSE -valor END) 
             FROM transacoes WHERE user_id = ? GROUP BY mes""",
@@ -161,21 +193,14 @@ def saldo():
     )
     saldo_mensal = cursor.fetchall()
 
-    # Fechar a conexão
     conn.close()
 
-    # Preparar dados para o template
     return render_template("saldo.html", 
                             saldo=saldo_atual, 
                             transacoes=transacoes, 
                             despesas_por_categoria=despesas_por_categoria, 
                             gastos_mensais=gastos_mensais, 
                             saldo_mensal=saldo_mensal)
-from datetime import datetime
-from flask import render_template
-
-from datetime import datetime
-from flask import render_template
 
 @app.route("/resumo")
 @login_required
@@ -183,15 +208,13 @@ def resumo():
     mes_atual = datetime.now().strftime("%Y-%m")
     conn = conectar_financas_db()
     cursor = conn.cursor()
-    
-    # Obter resumo das transações
+
     cursor.execute(
         """SELECT tipo, SUM(valor) FROM transacoes WHERE data LIKE ? GROUP BY tipo""",
         (f"{mes_atual}%",),
     )
     resumo = cursor.fetchall()
 
-    # Obter transações detalhadas
     cursor.execute(
         """SELECT descricao, valor, tipo, categoria, data FROM transacoes WHERE data LIKE ? ORDER BY data DESC""",
         (f"{mes_atual}%",),
@@ -199,17 +222,16 @@ def resumo():
     transacoes = cursor.fetchall()
     conn.close()
 
-    # Calcular entradas, saídas e total
     entradas = sum(r[1] for r in resumo if r[0] == "entrada")
     saidas = sum(r[1] for r in resumo if r[0] == "saida")
     total = entradas - saidas
-    saldo = entradas - saidas  # Saldo total para o gráfico de pizza
+    saldo = entradas - saidas
 
     return render_template(
         "resumo.html", 
         entradas=entradas, 
         saídas=saidas, 
-        saldo=saldo,  # Passando o saldo para o template
+        saldo=saldo,  
         total=total, 
         transacoes=transacoes
     )
@@ -227,7 +249,6 @@ def exportar_pdf():
     )
     resumo = cursor.fetchall()
 
-    # Obter transações detalhadas
     cursor.execute(
         """SELECT descricao, valor, tipo, categoria, data FROM transacoes WHERE data LIKE ? ORDER BY data DESC""",
         (f"{mes_atual}%",),
@@ -235,12 +256,10 @@ def exportar_pdf():
     transacoes = cursor.fetchall()
     conn.close()
 
-    # Calcular entradas, saídas e total
     entradas = sum(r[1] for r in resumo if r[0] == "entrada")
     saidas = sum(r[1] for r in resumo if r[0] == "saida")
     total = entradas - saidas
 
-    # Criar o PDF
     pdf = FPDF()
     pdf.add_page()
     
@@ -257,7 +276,6 @@ def exportar_pdf():
     pdf.cell(200, 10, txt=f"Saídas: R$ {saidas:.2f}", ln=True)
     pdf.cell(200, 10, txt=f"Total: R$ {total:.2f}", ln=True)
 
-    # Adicionar transações detalhadas
     pdf.cell(200, 10, txt="Transações Detalhadas:", ln=True)
     pdf.cell(200, 10, txt="Descrição | Valor | Tipo | Categoria | Data", ln=True)
 
@@ -280,9 +298,16 @@ def exportar_pdf():
 def excluir_transacao(transacao_id):
     conn = conectar_financas_db()
     cursor = conn.cursor()
+    cursor.execute("SELECT descricao, valor FROM transacoes WHERE id = ?", (transacao_id,))
+    transacao = cursor.fetchone()
+    
     cursor.execute("DELETE FROM transacoes WHERE id = ?", (transacao_id,))
     conn.commit()
     conn.close()
+
+    # Criar notificação
+    criar_notificacao(session["user_id"], f"Transação excluída: {transacao[0]} - R$ {transacao[1]:.2f}")
+
     flash("Transação excluída com sucesso!")
     return redirect("/")
 
@@ -305,6 +330,10 @@ def editar_transacao(transacao_id):
         )
         conn.commit()
         conn.close()
+        
+        # Criar notificação
+        criar_notificacao(session["user_id"], f"Transação editada: {descricao} - R$ {valor:.2f}")
+
         flash("Transação atualizada com sucesso!")
         return redirect("/")
 
@@ -366,12 +395,9 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
-    session.clear()  # Remove todos os dados da sessão
+    session.clear()
     flash("Você saiu com sucesso.")
     return redirect("/login")
-
-def conectar_planejamento_db():
-    return sqlite3.connect("planejamento.db")
 
 @app.route("/planejamento")
 @login_required
@@ -392,17 +418,22 @@ def criar_planejamento():
         descricao = request.form["descricao"]
         valor_meta = float(request.form["valor_meta"])
         prazo = request.form["prazo"]
+        
         conn = conectar_planejamento_db()
         cursor = conn.cursor()
         cursor.execute(
             """
             INSERT INTO planejamento (user_id, descricao, valor_meta, prazo)
             VALUES (?, ?, ?, ?)
-        """,
+            """,
             (session["user_id"], descricao, valor_meta, prazo),
         )
         conn.commit()
         conn.close()
+
+        # Criar notificação
+        criar_notificacao(session["user_id"], f"Novo planejamento criado: {descricao} - Meta: R$ {valor_meta:.2f}")
+
         flash("Planejamento criado com sucesso!")
         return redirect("/planejamento")
 
@@ -419,16 +450,21 @@ def editar_planejamento(id):
         valor_meta = float(request.form["valor_meta"])
         valor_atual = float(request.form["valor_atual"])
         prazo = request.form["prazo"]
+
         cursor.execute(
             """
             UPDATE planejamento
             SET descricao = ?, valor_meta = ?, valor_atual = ?, prazo = ?
             WHERE id = ? AND user_id = ?
-        """,
+            """,
             (descricao, valor_meta, valor_atual, prazo, id, session["user_id"]),
         )
         conn.commit()
         conn.close()
+
+        # Criar notificação
+        criar_notificacao(session["user_id"], f"Planejamento atualizado: {descricao} - Meta: R$ {valor_meta:.2f}")
+
         flash("Planejamento atualizado com sucesso!")
         return redirect("/planejamento")
 
@@ -446,18 +482,97 @@ def excluir_planejamento(id):
     conn = conectar_planejamento_db()
     cursor = conn.cursor()
     cursor.execute(
+        "SELECT descricao, valor_meta FROM planejamento WHERE id = ? AND user_id = ?",
+        (id, session["user_id"]),
+    )
+    planejamento = cursor.fetchone()
+    
+    cursor.execute(
         "DELETE FROM planejamento WHERE id = ? AND user_id = ?",
         (id, session["user_id"]),
     )
     conn.commit()
     conn.close()
+
+    # Criar notificação
+    criar_notificacao(session["user_id"], f"Planejamento excluído: {planejamento[0]} - Meta: R$ {planejamento[1]:.2f}")
+
     flash("Planejamento excluído com sucesso!")
     return redirect("/planejamento")
 
+@app.route("/notificacoes")
+@app.route("/notificacoes/<int:pagina>")
+@login_required
+def notificacoes(pagina=1):
+    conn = conectar_financas_db()
+    cursor = conn.cursor()
+    
+    user_id = session["user_id"]  # Certifique-se de que isso está correto
+    limite = 10  # Número de notificações por página
+    offset = (pagina - 1) * limite
+
+    # Consulta para pegar as notificações com limite e offset
+    cursor.execute("SELECT * FROM notificacoes WHERE user_id = ? ORDER BY data_criacao DESC LIMIT ? OFFSET ?", (user_id, limite, offset))
+    notificacoes = cursor.fetchall()
+
+    # Consulta para contar o total de notificações
+    cursor.execute("SELECT COUNT(*) FROM notificacoes WHERE user_id = ?", (user_id,))
+    total_notificacoes = cursor.fetchone()[0]
+    total_paginas = (total_notificacoes + limite - 1) // limite  # Cálculo do total de páginas
+
+    print(f"Notificações: {notificacoes}")
+    print(f"User ID na sessão: {session['user_id']}")
+
+    conn.close()
+    
+    return render_template("notificacoes.html", notificacoes=notificacoes, pagina=pagina, total_paginas=total_paginas)
+
+@app.route("/marcar_lida/<int:notificacao_id>")
+@login_required
+def marcar_lida(notificacao_id):
+    conn = conectar_financas_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE notificacoes SET lida = 1 WHERE id = ?", (notificacao_id,))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("notificacoes"))
+
+@app.route("/notificacoes/<int:pagina>")
+@login_required
+def notificacoes_paginas(pagina=1):
+    conn = conectar_financas_db()
+    cursor = conn.cursor()
+    
+    limite = 10  # Número de notificações por página
+    offset = (pagina - 1) * limite
+
+    cursor.execute("SELECT * FROM notificacoes WHERE user_id = ? ORDER BY data_criacao DESC LIMIT ? OFFSET ?", (session["user_id"], limite, offset))
+    notificacoes = cursor.fetchall()
+
+    cursor.execute("SELECT COUNT(*) FROM notificacoes WHERE user_id = ?", (session["user_id"],))
+    total_notificacoes = cursor.fetchone()[0]
+    total_paginas = (total_notificacoes + limite - 1) // limite
+
+    conn.close()
+    
+    return render_template("notificacoes.html", notificacoes=notificacoes, pagina=pagina, total_paginas=total_paginas)
+
+@app.route("/notificacoes/excluir/<int:notificacao_id>", methods=["POST"])
+@login_required
+def excluir_notificacao(notificacao_id):
+    conn = conectar_financas_db()
+    cursor = conn.cursor()
+    
+    # Excluir a notificação pelo ID
+    cursor.execute("DELETE FROM notificacoes WHERE id = ? AND user_id = ?", (notificacao_id, session["user_id"]))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("notificacoes"))
+
 # Executar o servidor
 if __name__ == "__main__":
-    # Obtém a porta a partir da variável de ambiente PORT, padrão 5000
+    criar_tabela_notificacoes()
     PORT = int(os.getenv("PORT", 5000))
-
-    # Executa o app na interface 0.0.0.0 para ser acessível publicamente
     app.run(host="0.0.0.0", port=PORT, debug=True)
