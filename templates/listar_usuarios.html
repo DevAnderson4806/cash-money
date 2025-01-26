@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários</title>
+</head>
+<body>
+    <h1>Usuários</h1>
+    <a href="{{ url_for('admin') }}">Voltar ao Painel de Administração</a>
+    
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nome de Usuário</th>
+            <th>Admin</th>
+            <th>Ações</th>
+        </tr>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario[0] }}</td>
+            <td>{{ usuario[1] }}</td>
+            <td>{{ 'Sim' if usuario[2] else 'Não' }}</td>
+            <td>
+                <a href="{{ url_for('editar_usuario', id=usuario[0]) }}">Editar</a>
+                <form action="{{ url_for('excluir_usuario', id=usuario[0]) }}" method="POST" style="display:inline;">
+                    <button type="submit">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('criar_usuario') }}">Adicionar Novo Usuário</a>
+</body>
+</html>

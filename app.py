@@ -32,6 +32,15 @@ def login_required(f):
 
     return decorated_function
 
+@app.route("/admin")
+@login_required
+def admin():
+    if not session.get("is_admin"):
+        flash("Você não tem permissão para acessar esta página.")
+        return redirect("/")  # Redireciona para a página inicial se não for admin
+    return render_template("admin.html")
+
+
 # Criar tabela de notificações
 def criar_tabela_notificacoes():
     conn = conectar_financas_db()
@@ -376,20 +385,31 @@ def login():
         conn = conectar_usuarios_db()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, password FROM usuarios WHERE username = ?", (username,)
+            "SELECT id, password, is_admin FROM usuarios WHERE username = ?", (username,)
         )
         user = cursor.fetchone()
         conn.close()
 
-        if user and check_password_hash(user[1], password):
-            session["user_id"] = user[0]
-            flash("Login realizado com sucesso!")
-            return redirect("/")
-        else:
-            flash("Usuário ou senha inválidos.")
-            return redirect("/login")
+        if user:
+            if check_password_hash(user[1], password):
+                session["user_id"] = user[0]
+                session["is_admin"] = user[2]  # Armazena se o usuário é admin
+                flash("Login realizado com sucesso!")
 
-    return render_template("login.html")
+                # Verifica se o usuário é admin
+                if user[2]:  # user[2] é o valor de is_admin
+                    return redirect("/admin")  # Redireciona para a página de admin
+                else:
+                    return redirect("/")  # Redireciona para a página normal
+
+            else:
+                flash("Senha incorreta.")
+        else:
+            flash("Usuário não encontrado.")
+
+        return redirect("/login")  # Redireciona se falhar
+
+    return render_template("login.html")  # Retorna o template para o método GET
 
 # Rota para logout
 @app.route("/logout")
@@ -570,6 +590,142 @@ def excluir_notificacao(notificacao_id):
     conn.close()
     
     return redirect(url_for("notificacoes"))
+
+@app.route("/usuario")
+@login_required
+def usuario():
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username FROM usuarios WHERE id = ?", (session["user_id"],))
+    usuario = cursor.fetchone()
+    conn.close()
+
+    return render_template("usuario.html", usuario=usuario)
+
+from werkzeug.security import generate_password_hash
+
+@app.route("/editar_usuario", methods=["GET", "POST"])
+@login_required
+def editar_usuario():
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        novo_username = request.form["username"]
+        nova_senha = request.form["password"]
+
+        # Hash da nova senha
+        hashed_password = generate_password_hash(nova_senha)
+
+        cursor.execute(
+            """UPDATE usuarios SET username = ?, password = ? WHERE id = ?""",
+            (novo_username, hashed_password, session["user_id"])
+        )
+        conn.commit()
+        conn.close()
+
+        flash("Dados atualizados com sucesso!")
+        return redirect("/usuario")
+
+    cursor.execute("SELECT username FROM usuarios WHERE id = ?", (session["user_id"],))
+    usuario = cursor.fetchone()
+    conn.close()
+ 
+    return render_template("editar_usuario.html", usuario=usuario)
+
+@app.route("/verificar_senha", methods=["POST"])
+@login_required
+def verificar_senha():
+    senha_inserida = request.json.get("senha")
+    
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT password FROM usuarios WHERE id = ?", (session["user_id"],))
+    usuario = cursor.fetchone()
+
+    if usuario and check_password_hash(usuario[0], senha_inserida):
+        # Aqui você deve retornar a senha real, mas **não é recomendado**
+        return jsonify({"success": True, "senha": senha_inserida})  # Retorna a senha inserida
+    else:
+        return jsonify({"success": False, "message": "Senha incorreta."})
+    
+
+@app.route("/admin/usuarios")
+@login_required
+def listar_usuarios():
+    if not session.get("is_admin"):
+        flash("Você não tem permissão para acessar esta página.")
+        return redirect("/")
+    
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, is_admin FROM usuarios")
+    usuarios = cursor.fetchall()
+    conn.close()
+    
+    return render_template("listar_usuarios.html", usuarios=usuarios)
+
+
+@app.route("/admin/usuario/nova", methods=["GET", "POST"])
+@login_required
+def criar_usuario():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        is_admin = request.form.get("is_admin", False)
+
+        hashed_password = generate_password_hash(password)
+        conn = conectar_usuarios_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO usuarios (username, password, is_admin) VALUES (?, ?, ?)",
+            (username, hashed_password, is_admin)
+        )
+        conn.commit()
+        conn.close()
+        flash("Usuário criado com sucesso!")
+        return redirect(url_for('listar_usuarios'))
+
+    return render_template("criar_usuario.html")
+
+@app.route("/admin/usuario/editar/<int:id>", methods=["GET", "POST"])
+@login_required
+def editar_usuario_admin(id):
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        username = request.form["username"]
+        is_admin = request.form.get("is_admin", False)
+
+        cursor.execute(
+            "UPDATE usuarios SET username = ?, is_admin = ? WHERE id = ?",
+            (username, is_admin, id)
+        )
+        conn.commit()
+        conn.close()
+        flash("Usuário atualizado com sucesso!")
+        return redirect(url_for('listar_usuarios'))
+
+    cursor.execute("SELECT username, is_admin FROM usuarios WHERE id = ?", (id,))
+    usuario = cursor.fetchone()
+    conn.close()
+    
+    return render_template("editar_usuario.html", usuario=usuario)
+
+# Verifique se não há outra função com o mesmo nome
+
+@app.route("/admin/usuario/excluir/<int:id>", methods=["POST"])
+@login_required
+def excluir_usuario(id):
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    flash("Usuário excluído com sucesso!")
+    return redirect(url_for('listar_usuarios'))
 
 # Executar o servidor
 if __name__ == "__main__":

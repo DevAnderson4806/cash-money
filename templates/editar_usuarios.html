@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Usuário</title>
+</head>
+<body>
+    <h1>Editar Usuário</h1>
+    
+    <nav>
+        <a href="{{ url_for('listar_usuarios') }}">Voltar à Lista de Usuários</a>
+    </nav>
+
+    <form action="{{ url_for('editar_usuario', id=usuario[0]) }}" method="POST">
+        <label for="username">Nome de Usuário:</label><br>
+        <input type="text" id="username" name="username" value="{{ usuario[0] }}" required><br><br>
+
+        <label for="is_admin">É Admin?</label><br>
+        <select id="is_admin" name="is_admin">
+            <option value="0" {% if not usuario[1] %}selected{% endif %}>Não</option>
+            <option value="1" {% if usuario[1] %}selected{% endif %}>Sim</option>
+        </select><br><br>
+
+        <input type="submit" value="Salvar">
+    </form>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>

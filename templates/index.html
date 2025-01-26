@@ -129,7 +129,7 @@
             <h2 class="id2">Bem-vindo, {{ username }}!</h2>
         {% endif %}
         <a href="/usuario">Visualizar Dados</a><br>
-        <a href="/usuario/editar">Editar Dados</a><br>
+        <a class="button" href="{{ url_for('editar_usuario') }}">Editar Dados</a><br>
         <ul>
             {% if 'user_id' in session %}
                 <li><a href="/logout" class="dinamico" id="sair-menu">Deslogar</a></li> <!-- A classe 'dinamico' aplica estilo verde -->

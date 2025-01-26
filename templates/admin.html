@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administração</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav { margin-bottom: 20px; }
+        a { margin-right: 15px; }
+        h2 { margin-top: 30px; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 10px 0; }
+        .message { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Painel de Administração</h1>
+    
+    <nav>
+        <a href="{{ url_for('index') }}">Página Inicial</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li class="message">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <h2>Gerenciamento</h2>
+    <ul>
+        <li><a href="{{ url_for('listar_planejamentos') }}">Gerenciar Planejamentos</a></li>
+        <li><a href="{{ url_for('notificacoes') }}">Ver Notificações</a></li>
+        <li><a href="{{ url_for('listar_usuarios') }}">Gerenciar Usuários</a></li>
+        <!-- Adicione mais links conforme necessário -->
+    </ul>
+</body>
+</html>

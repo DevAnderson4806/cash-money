@@ -5,20 +5,31 @@ def inicializar_banco_dados():
     conn = sqlite3.connect("usuarios.db")
     cursor = conn.cursor()
 
-    # Criar tabela de usuários
+    # Criar tabela de usuários (caso não exista)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        is_admin BOOLEAN DEFAULT 0
     )
     """)
+
+    # Adicionar a coluna is_admin (se não existir)
+    try:
+        cursor.execute('ALTER TABLE usuarios ADD COLUMN is_admin BOOLEAN DEFAULT 0')
+    except sqlite3.OperationalError:
+        # Ignorar se a coluna já existir
+        pass
+
+    conn.commit()
+    conn.close()
 
     # Conectar ao banco de dados de finanças
     conn = sqlite3.connect("finanças.db")
     cursor = conn.cursor()
 
-    # Criar tabela de transações
+    # Criar tabela de transações (caso não exista)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS transacoes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,11 +41,14 @@ def inicializar_banco_dados():
     )
     """)
 
+    conn.commit()
+    conn.close()
+
     # Conectar ao banco de dados de planejamento
     conn = sqlite3.connect("planejamento.db")
     cursor = conn.cursor()
 
-    # Criar tabela de planejamento
+    # Criar tabela de planejamento (caso não exista)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS planejamento (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +61,6 @@ def inicializar_banco_dados():
     )
     """)
 
-    # Commit e fechar conexão
     conn.commit()
     conn.close()
     print("Banco de dados inicializado com sucesso.")

@@ -2,15 +2,31 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Editar Usuário</title>
+    <link rel="stylesheet" href="../static/novo.css">
+    <link rel="icon" href="../static/finanças.jpeg" type="image/x-icon">
+    <title>Editar Dados do Usuário</title>
+    <script>
+        function togglePasswordVisibility() {
+            const passwordField = document.getElementById("password");
+            const passwordToggle = document.getElementById("showPassword");
+            passwordField.type = passwordToggle.checked ? "text" : "password";
+        }
+    </script>
 </head>
 <body>
-    <h1>Editar Usuário</h1>
-    <form action="/usuario/editar" method="post">
-        <input type="text" name="username" value="{{ dados[0] }}" required>
-        <input type="password" name="password" placeholder="Nova Senha (opcional)">
+    <h1>Editar Dados do Usuário</h1>
+    <form action="{{ url_for('editar_usuario') }}" method="POST">
+        <label for="username">Nome de Usuário:</label>
+        <input type="text" id="username" name="username" value="{{ usuario[0] }}" required>
+        
+        <label for="password">Nova Senha:</label>
+        <input type="password" id="password" name="password" placeholder="Digite sua nova senha" required>
+        
+        <input type="checkbox" id="showPassword" onclick="togglePasswordVisibility()">
+        <label for="showPassword">Mostrar Senha</label>
+        
         <button type="submit">Salvar</button>
     </form>
-    <a href="/usuario">Voltar</a>
+    <a href="{{ url_for('usuario') }}">Cancelar</a>
 </body>
 </html>
