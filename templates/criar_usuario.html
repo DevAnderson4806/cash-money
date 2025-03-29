@@ -4,12 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/style.css">
-    <title>Gerenciar Usuários</title>
+    <title>Painel de Administração</title>
 </head>
 <body>
-    <h1>Usuários</h1>
-    <a href="{{ url_for('admin') }}">Voltar ao Painel de Administração</a>
+    <h1>Painel de Administração</h1>
+    <a href="{{ url_for('listar_usuarios') }}">Gerenciar Usuários</a>
     
+    <h2>Criar Novo Usuário</h2>
+    <form action="{{ url_for('criar_usuario') }}" method="POST">
+        <label for="username">Nome de Usuário:</label>
+        <input type="text" id="username" name="username" required>
+        
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required>
+        
+        <label for="is_admin">É Admin?</label>
+        <select id="is_admin" name="is_admin">
+            <option value="0">Não</option>
+            <option value="1">Sim</option>
+        </select>
+        
+        <button type="submit">Criar Usuário</button>
+    </form>
+
+    <h2>Usuários Existentes</h2>
     <table>
         <tr>
             <th>ID</th>
@@ -23,17 +41,17 @@
             <td>{{ usuario[0] }}</td>
             <td>{{ usuario[1] }}</td>
             <td>{{ 'Sim' if usuario[2] else 'Não' }}</td>
-            <td>{{ 'Sim' if usuario[3] else 'Não' }}</td> <!-- Exibe se o usuário está ativo -->
+            <td>{{ 'Sim' if usuario[3] else 'Não' }}</td>
             <td>
                 <a href="{{ url_for('editar_usuario', id=usuario[0]) }}">Editar</a>
                 <form action="{{ url_for('excluir_usuario', id=usuario[0]) }}" method="POST" style="display:inline;">
                     <button type="submit">Excluir</button>
                 </form>
-                {% if usuario[3] %} <!-- Se o usuário estiver ativo -->
+                {% if usuario[3] %}
                     <form action="{{ url_for('desativar_usuario', id=usuario[0]) }}" method="POST" style="display:inline;">
                         <button type="submit">Desativar</button>
                     </form>
-                {% else %} <!-- Se o usuário estiver inativo -->
+                {% else %}
                     <form action="{{ url_for('ativar_usuario', id=usuario[0]) }}" method="POST" style="display:inline;">
                         <button type="submit">Ativar</button>
                     </form>
@@ -45,6 +63,5 @@
         </tr>
         {% endfor %}
     </table>
-    <a href="{{ url_for('criar_usuario') }}">Adicionar Novo Usuário</a>
 </body>
 </html>

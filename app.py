@@ -657,13 +657,13 @@ def listar_usuarios():
     if not session.get("is_admin"):
         flash("Você não tem permissão para acessar esta página.")
         return redirect("/")
-    
+
     conn = conectar_usuarios_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, username, is_admin FROM usuarios")
+    cursor.execute("SELECT id, username, is_admin, ativo FROM usuarios")  # Incluindo a coluna ativo
     usuarios = cursor.fetchall()
     conn.close()
-    
+
     return render_template("listar_usuarios.html", usuarios=usuarios)
 
 
@@ -726,6 +726,58 @@ def excluir_usuario(id):
     conn.close()
     flash("Usuário excluído com sucesso!")
     return redirect(url_for('listar_usuarios'))
+
+@app.route("/admin/usuario/ativar/<int:id>", methods=["POST"])
+@login_required
+def ativar_usuario(id):
+    if not session.get("is_admin"):
+        flash("Você não tem permissão para acessar esta página.")
+        return redirect("/")
+
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE usuarios SET ativo = 1 WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("Usuário ativado com sucesso!")
+    return redirect(url_for('listar_usuarios'))
+
+@app.route("/admin/usuario/desativar/<int:id>", methods=["POST"])
+@login_required
+def desativar_usuario(id):
+    if not session.get("is_admin"):
+        flash("Você não tem permissão para acessar esta página.")
+        return redirect("/")
+
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE usuarios SET ativo = 0 WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+
+    flash("Usuário desativado com sucesso!")
+    return redirect(url_for('listar_usuarios'))
+
+@app.route("/admin/usuario/redefinir_senha/<int:id>", methods=["POST"])
+@login_required
+def redefinir_senha(id):
+    if not session.get("is_admin"):
+        flash("Você não tem permissão para acessar esta página.")
+        return redirect("/")
+
+    nova_senha = "senha_temporal"  # Gerar uma senha temporária
+    hashed_password = generate_password_hash(nova_senha)
+
+    conn = conectar_usuarios_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE usuarios SET password = ? WHERE id = ?", (hashed_password, id))
+    conn.commit()
+    conn.close()
+
+    flash(f"A senha do usuário foi redefinida para: {nova_senha}")
+    return redirect(url_for('listar_usuarios'))
+
 
 # Executar o servidor
 if __name__ == "__main__":
